@@ -69,7 +69,7 @@ Install the required packages:
 
 bash
 
-``
+```
 pip install -r requirements.txt
 ```
 
@@ -78,10 +78,11 @@ To run the application, execute the following command in your terminal:
 
 bash
 
-``
+```
 streamlit run YouTube_viral_bot.py
+```
+
 This command will start a local web server, and you can access the application in your web browser at http://localhost:8501.
-``
 
 How to Use
 Open the application in your browser.
