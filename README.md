@@ -1,7 +1,5 @@
 # Youtube-Viral-Bot
 
-# YouTube Viral Bot
-
 ## Overview
 
 The **YouTube Viral Bot** is an innovative application designed to help content creators identify trending topics and generate engaging video content ideas based on real-time data. Utilizing the Pytrends library for Google Trends data, this bot analyzes keyword trends to suggest relevant and timely video content that can enhance visibility and engagement on YouTube.
