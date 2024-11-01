@@ -377,9 +377,9 @@ def get_trending_keywords(country):
     return df
 
 
-CLIENT_ID = st.secrets["Client_ID"]
-CLIENT_SECRET = st.secrets["Client_secret"]
-REDIRECT_URI = st.secrets["Redirect_url"]
+Client_ID = st.secrets["CLIENT_ID"]
+Client_secret = st.secrets["CLIENT_SECRET"]
+Redirect_url = st.secrets["REDIRECT_URI"]
 
 # Display Google login link
 def get_login_str():
