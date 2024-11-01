@@ -383,16 +383,16 @@ def get_login_str():
     return f'<a target="_self" href="{authorization_url}">Google login</a>'
 
 # Streamlit application
-st.image("https://raw.githubusercontent.com/CertifiedAuthur/Youtube-Viral-Bot/refs/heads/main/YoutubeViralChatbot.png", width=200)
-
-st.title("YouTube Viral ChatBot")
-
 st.title("Google Sign-In with Streamlit")
 
 if 'code' in st.query_params:
     display_user()
 else:
     st.markdown(get_login_str(), unsafe_allow_html=True)
+
+st.image("https://raw.githubusercontent.com/CertifiedAuthur/Youtube-Viral-Bot/refs/heads/main/YoutubeViralChatbot.png", width=200)
+
+st.title("YouTube Viral ChatBot")
 
 # YouTube API setup
 def get_service():
