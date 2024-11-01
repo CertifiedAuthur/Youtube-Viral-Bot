@@ -375,6 +375,12 @@ def get_trending_keywords(country):
     df["Search Volume"] = df["Search Volume"].apply(format_number)
     return df
 
+# Display Google login link
+def get_login_str():
+    client = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
+    authorization_url = asyncio.run(get_authorization_url(client, REDIRECT_URI))
+    return f'<a target="_self" href="{authorization_url}">Google login</a>'
+
 # Streamlit application
 st.image("https://raw.githubusercontent.com/CertifiedAuthur/Youtube-Viral-Bot/refs/heads/main/YoutubeViralChatbot.png", width=200)
 
