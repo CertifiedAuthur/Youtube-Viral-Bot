@@ -6,9 +6,9 @@ from httpx_oauth.oauth2 import GetAccessTokenError
 from httpx_oauth.clients.google import GoogleOAuth2
     
 # Fetch secrets from Streamlit's secrets
-CLIENT_ID = st.secrets["general"]["CLIENT_ID"]
-CLIENT_SECRET = st.secrets["general"]["CLIENT_SECRET"]
-REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
+CLIENT_ID = st.secrets["CLIENT_ID"]
+CLIENT_SECRET = st.secrets["CLIENT_SECRET"]
+REDIRECT_URI = st.secrets["REDIRECT_URI"]
 
 
 # Asynchronous function to get the Google authorization URL
