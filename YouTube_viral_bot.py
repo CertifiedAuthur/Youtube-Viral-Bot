@@ -399,15 +399,15 @@ def auth_flow():
     flow = Flow.from_client_config(
         {
             "installed": {
-                "client_id": st.secrets["CLIENT_ID"],
-                "client_secret": st.secrets["CLIENT_SECRET"],
+                "client_id": CLIENT_ID,
+                "client_secret": CLIENT_SECRET,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "redirect_uris": [st.secrets["REDIRECT_URI"]],
             }
         },
-        scopes=scopes,  # Pass scopes here
-        redirect_uri=st.secrets["REDIRECT_URI"],
+        scopes=scopes,
+        redirect_uri=REDIRECT_URI,
     )
 
 
