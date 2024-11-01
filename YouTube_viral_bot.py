@@ -5,6 +5,7 @@ import pytrends
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from httpx_oauth.clients.google import GoogleOAuth2
 import matplotlib.pyplot as plt
 from pytrends.request import TrendReq
 import datetime
