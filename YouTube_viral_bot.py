@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
+from auth import *
 import pytrends
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
