@@ -5,12 +5,10 @@ import asyncio
 from httpx_oauth.oauth2 import GetAccessTokenError
 from httpx_oauth.clients.google import GoogleOAuth2
 from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv('.env')
-CLIENT_ID = os.getenv('CLIENT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = os.getenv('REDIRECT_URI')
+    
+CLIENT_ID = st.sidebar.text_input("Client ID")
+CLIENT_SECRET = st.sidebar.text_input("Client Secret", type="password")
+REDIRECT_URI = st.secrets['REDIRECT_URI']
 
 
 # Asynchronous function to get the Google authorization URL
