@@ -376,13 +376,13 @@ def get_trending_keywords(country):
     df["Search Volume"] = df["Search Volume"].apply(format_number)
     return df
 
+# Button to trigger the login process, always displayed
+login_button = st.sidebar.button("Proceed to Google Login")
+
 CLIENT_ID = st.sidebar.text_input("Enter your Client ID")
 CLIENT_SECRET = st.sidebar.text_input("Enter your Client Secret Key")
 REDIRECT_URI = st.secrets["REDIRECT_URI"]
 
-
-# Button to trigger the login process, always displayed
-login_button = st.sidebar.button("Proceed to Google Login")
 
 # Button to initiate login
 if st.sidebar.button("Log in with Google"):
