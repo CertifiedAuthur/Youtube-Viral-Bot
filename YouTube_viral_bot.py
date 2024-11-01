@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from auth import *
 import pytrends
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from httpx_oauth.clients.google import GoogleOAuth2
 import matplotlib.pyplot as plt
@@ -378,59 +378,152 @@ def get_trending_keywords(country):
     df["Search Volume"] = df["Search Volume"].apply(format_number)
     return df
 
-print(st.secrets)
+# Load secrets from Streamlit Cloud
+CLIENT_ID = st.secrets["general"]["CLIENT_ID"]
+CLIENT_SECRET = st.secrets["general"]["CLIENT_SECRET"]
+REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
 
-try:
-    CLIENT_ID = st.secrets["general"]["CLIENT_ID"]
-    CLIENT_SECRET = st.secrets["general"]["CLIENT_SECRET"]
-    REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
 
-    
-    # Test output
-    st.write("Client ID loaded successfully.")
-except KeyError as e:
-    st.error(f"Missing secret key: {e}")
+def auth_flow():
+    # Set up the OAuth 2.0 flow
+    flow = Flow.from_client_config(
+        {
+            "installed": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": [redirect_uri],
+                "scopes": [
+                    "https://www.googleapis.com/auth/youtube.force-ssl", 
+                    "https://www.googleapis.com/auth/userinfo.profile", 
+                    "https://www.googleapis.com/auth/userinfo.email", 
+                    "https://www.googleapis.com/auth/youtubepartner", 
+                    "https://www.googleapis.com/auth/youtube", 
+                    "openid"
+                ],
+            }
+        },
+        redirect_uri=redirect_uri,
+    )
 
-# Display Google login link
-def get_login_str():
-    client = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
-    authorization_url = asyncio.run(get_authorization_url(client, REDIRECT_URI))
-    return f'<a target="_self" href="{authorization_url}">Google login</a>'
+    # Check if we have an authorization code
+    if "code" in st.session_state:
+        auth_code = st.session_state["code"]
+        flow.fetch_token(code=auth_code)
+        credentials = flow.credentials
+        st.session_state["credentials"] = credentials_to_dict(credentials)
+        st.experimental_rerun()
+    else:
+        # Generate the authorization URL
+        auth_url, _ = flow.authorization_url(prompt='consent')
+        st.write("Please [sign in]({}) to continue.".format(auth_url))
+        if st.button("Sign in"):
+            st.session_state["code"] = st.experimental_get_query_params().get("code", [None])[0]
+            st.experimental_rerun()
 
-# Streamlit application
-st.title("Google Sign-In with Streamlit")
+def credentials_to_dict(credentials):
+    """Convert credentials to a dictionary for easy access."""
+    return {
+        "token": credentials.token,
+        "refresh_token": credentials.refresh_token,
+        "token_uri": credentials.token_uri,
+        "client_id": credentials.client_id,
+        "client_secret": credentials.client_secret,
+        "scopes": credentials.scopes,
+    }
 
-if 'code' in st.query_params:
-    display_user()
-else:
-    st.markdown(get_login_str(), unsafe_allow_html=True)
+def main():
+    # Initialize session state for credentials
+    if "credentials" not in st.session_state:
+        st.session_state["credentials"] = None
+
+    if st.session_state["credentials"]:
+        # User is authenticated, proceed with API calls
+        credentials = google.oauth2.credentials.Credentials(**st.session_state["credentials"])
+        # Create YouTube API client here using `credentials`
+        youtube = build('youtube', 'v3', credentials=credentials)
+    else:
+        # Perform authentication
+        auth_flow()
 
 st.image("https://raw.githubusercontent.com/CertifiedAuthur/Youtube-Viral-Bot/refs/heads/main/YoutubeViralChatbot.png", width=200)
-
 st.title("YouTube Viral ChatBot")
 
-# YouTube API setup
+# Updated get_service to handle missing credentials
 def get_service():
-    access_token = st.session_state.get('access_token')
-    if access_token:
-        try:
-            creds = credentials.Credentials(token=access_token)
-            return build("youtube", "v3", credentials=creds)
-        except Exception as e:
-            st.error(f"Failed to create YouTube API client: {e}")
-            return None
-    else:
-        st.error("No access token found. Please log in first.")
+    if "credentials" not in st.session_state or st.session_state["credentials"] is None:
+        st.error("Please sign in first.")
         return None
-
-
+    try:
+        service = build("youtube", "v3", credentials=st.session_state["credentials"])
+        return service
+    except Exception as e:
+        st.error(f"Error building YouTube service: {e}")
+        return None
+    
 def execute_api_request(client_library_function, **kwargs):
-    youtube = get_service()  # Get YouTube API service client
-    if youtube:
+    try:
         response = client_library_function(**kwargs).execute()
         return response
-    else:
-        st.error("Failed to execute API request.")
+    except Exception as e:
+        st.error(f"API request failed: {e}")
+        return None
+
+if __name__ == "__main__":
+    main()
+
+# try:
+    # CLIENT_ID = st.secrets["general"]["CLIENT_ID"]
+    # CLIENT_SECRET = st.secrets["general"]["CLIENT_SECRET"]
+    # REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
+
+    
+#     # Test output
+#     st.write("Client ID loaded successfully.")
+# except KeyError as e:
+#     st.error(f"Missing secret key: {e}")
+
+# # Display Google login link
+# def get_login_str():
+#     client = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
+#     authorization_url = asyncio.run(get_authorization_url(client, REDIRECT_URI))
+#     return f'<a target="_self" href="{authorization_url}">Google login</a>'
+
+# # Streamlit application
+# st.title("Google Sign-In with Streamlit")
+
+# if 'code' in st.query_params:
+#     display_user()
+# else:
+#     st.markdown(get_login_str(), unsafe_allow_html=True)
+
+# st.image("https://raw.githubusercontent.com/CertifiedAuthur/Youtube-Viral-Bot/refs/heads/main/YoutubeViralChatbot.png", width=200)
+
+# st.title("YouTube Viral ChatBot")
+
+# # YouTube API setup
+# def get_service():
+#     access_token = st.session_state.get('access_token')
+#     if access_token:
+#         try:
+#             creds = credentials.Credentials(token=access_token)
+#             return build("youtube", "v3", credentials=creds)
+#         except Exception as e:
+#             st.error(f"Failed to create YouTube API client: {e}")
+#             return None
+#     else:
+#         st.error("No access token found. Please log in first.")
+#         return None
+
+
+# def execute_api_request(client_library_function, **kwargs):
+#     youtube = get_service()  # Get YouTube API service client
+#     if youtube:
+#         response = client_library_function(**kwargs).execute()
+#         return response
+#     else:
+#         st.error("Failed to execute API request.")
 
 options = [
     "Public Channel Analytics", "Video Metrics", "YouTube Search", "Channel Information", "Playlist Details",
