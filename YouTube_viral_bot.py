@@ -385,27 +385,31 @@ REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
 
 
 def auth_flow():
+    # Define the scopes
+    scopes = [
+        "https://www.googleapis.com/auth/youtube.force-ssl",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/youtubepartner",
+        "https://www.googleapis.com/auth/youtube",
+        "openid"
+    ]
+    
     # Set up the OAuth 2.0 flow
     flow = Flow.from_client_config(
         {
             "installed": {
-                "client_id": CLIENT_ID,
-                "client_secret": CLIENT_SECRET,
+                "client_id": st.secrets["CLIENT_ID"],
+                "client_secret": st.secrets["CLIENT_SECRET"],
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [REDIRECT_URI],
-                "scopes": [
-                    "https://www.googleapis.com/auth/youtube.force-ssl", 
-                    "https://www.googleapis.com/auth/userinfo.profile", 
-                    "https://www.googleapis.com/auth/userinfo.email", 
-                    "https://www.googleapis.com/auth/youtubepartner", 
-                    "https://www.googleapis.com/auth/youtube", 
-                    "openid"
-                ],
+                "redirect_uris": [st.secrets["REDIRECT_URI"]],
             }
         },
-        redirect_uri=REDIRECT_URI,
+        scopes=scopes,  # Pass scopes here
+        redirect_uri=st.secrets["REDIRECT_URI"],
     )
+
 
     # Check if we have an authorization code
     if "code" in st.session_state:
