@@ -376,6 +376,10 @@ def get_trending_keywords(country):
     df["Search Volume"] = df["Search Volume"].apply(format_number)
     return df
 
+    CLIENT_ID = st.sidebar.text_input("Enter your Client ID")
+    CLIENT_SECRET = st.sidebar.text_input("Enter your Client Secret Key")
+    REDIRECT_URI = st.secrets["REDIRECT_URI"]
+
 # Display Google login link
 def get_login_str():
     client = GoogleOAuth2(CLIENT_ID, CLIENT_SECRET)
