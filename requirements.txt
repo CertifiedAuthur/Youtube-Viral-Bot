@@ -9,3 +9,4 @@ google-auth-oauthlib
 matplotlib
 pandas
 numpy
+httpx-oauth
