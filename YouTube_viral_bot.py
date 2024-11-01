@@ -380,50 +380,35 @@ st.image("https://raw.githubusercontent.com/CertifiedAuthur/Youtube-Viral-Bot/re
 
 st.title("YouTube Viral ChatBot")
 
-# Upload the OAuth JSON file
-st.sidebar.info("Please upload your OAuth JSON file to continue")
-uploaded_file = st.sidebar.file_uploader("Upload your OAuth JSON file", type=["json"])
+st.title("Google Sign-In with Streamlit")
 
-if uploaded_file is None:
-    st.warning("Waiting for OAuth JSON file upload...")
-    st.stop()
+if 'code' in st.query_params:
+    display_user()
+else:
+    st.markdown(get_login_str(), unsafe_allow_html=True)
 
-# Save the uploaded file temporarily
-temp_file_path = "temp_client_secret.json"
-with open(temp_file_path, "wb") as f:
-    f.write(uploaded_file.getbuffer())
-
-    
-
-SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl',
-          'https://www.googleapis.com/auth/youtube',
-          'https://www.googleapis.com/auth/youtubepartner']
-API_SERVICE_NAME = "youtube"
-API_VERSION = "v3"
-CLIENT_SECRETS_FILE = temp_file_path
-
+# YouTube API setup
 def get_service():
-    # Load credentials from a file if they exist
-    creds = None
-    if 'token.pickle' in st.session_state:
-        creds = pickle.loads(st.session_state['token.pickle'])
-    
-    # If there are no credentials or they are invalid, perform OAuth flow
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
-            creds = flow.run_local_server(port=0)  # Use a local server for the OAuth flow
-        
-            # Save the credentials for the next run in the session state
-            st.session_state['token.pickle'] = pickle.dumps(creds)
+    access_token = st.session_state.get('access_token')
+    if access_token:
+        try:
+            creds = credentials.Credentials(token=access_token)
+            return build("youtube", "v3", credentials=creds)
+        except Exception as e:
+            st.error(f"Failed to create YouTube API client: {e}")
+            return None
+    else:
+        st.error("No access token found. Please log in first.")
+        return None
 
-    return build(API_SERVICE_NAME, API_VERSION, credentials=creds)
 
 def execute_api_request(client_library_function, **kwargs):
-    response = client_library_function(**kwargs).execute()
-    return response
+    youtube = get_service()  # Get YouTube API service client
+    if youtube:
+        response = client_library_function(**kwargs).execute()
+        return response
+    else:
+        st.error("Failed to execute API request.")
 
 options = [
     "Public Channel Analytics", "Video Metrics", "YouTube Search", "Channel Information", "Playlist Details",
