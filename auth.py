@@ -6,8 +6,8 @@ from httpx_oauth.oauth2 import GetAccessTokenError
 from httpx_oauth.clients.google import GoogleOAuth2
 from dotenv import load_dotenv
     
-CLIENT_ID = st.sidebar.text_input("Client ID")
-CLIENT_SECRET = st.sidebar.text_input("Client Secret", type="password")
+CLIENT_ID = st.secrets["CLIENT_ID"]
+CLIENT_SECRET = st.secrets["CLIENT_SECRET"]
 REDIRECT_URI = st.secrets['REDIRECT_URI']
 
 
