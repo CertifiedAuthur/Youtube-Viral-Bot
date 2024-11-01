@@ -379,9 +379,10 @@ def get_trending_keywords(country):
 print(st.secrets)
 
 try:
-    CLIENT_ID = st.secrets["CLIENT_ID"]
-    CLIENT_SECRET = st.secrets["CLIENT_SECRET"]
-    REDIRECT_URI = st.secrets["REDIRECT_URI"]
+    CLIENT_ID = st.secrets["general"]["CLIENT_ID"]
+    CLIENT_SECRET = st.secrets["general"]["CLIENT_SECRET"]
+    REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
+
     
     # Test output
     st.write("Client ID loaded successfully.")
