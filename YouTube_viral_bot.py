@@ -376,10 +376,17 @@ def get_trending_keywords(country):
     df["Search Volume"] = df["Search Volume"].apply(format_number)
     return df
 
+print(st.secrets)
 
-Client_ID = st.secrets["CLIENT_ID"]
-Client_secret = st.secrets["CLIENT_SECRET"]
-Redirect_url = st.secrets["REDIRECT_URI"]
+try:
+    CLIENT_ID = st.secrets["CLIENT_ID"]
+    CLIENT_SECRET = st.secrets["CLIENT_SECRET"]
+    REDIRECT_URI = st.secrets["REDIRECT_URI"]
+    
+    # Test output
+    st.write("Client ID loaded successfully.")
+except KeyError as e:
+    st.error(f"Missing secret key: {e}")
 
 # Display Google login link
 def get_login_str():
