@@ -404,7 +404,10 @@ def init_session():
 # Updated auth_flow to save credentials
 def auth_flow():
     st.write("Welcome to My App!")
-    auth_code = st.query_params().get("code", [None])[0]
+    # Get the query parameters
+    query_params = st.experimental_get_query_params()
+    # Get the authorization code from query parameters
+    auth_code = query_params.get("code", [None])[0]
     flow_instance = flow.Flow.from_client_config(
         client_config,
         scopes=[
