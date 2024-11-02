@@ -387,8 +387,8 @@ if client_secret_json_path:
 redirect_uri = "https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.app"
 
 # Local Storage Functions
-def ls_get(key, session_key=None):
-    return st_js_blocking(f"return JSON.parse(localStorage.getItem('{key}'));", key="ls_get_{key}")
+def ls_get(key):
+    return st_js_blocking(f"return JSON.parse(localStorage.getItem('{key}'));", key=f"ls_get_{key}")
 
 def ls_set(key, value, session_key=None):
     json_data = json.dumps(value, ensure_ascii=False)
@@ -396,7 +396,7 @@ def ls_set(key, value, session_key=None):
 
 # Initialize session with user info if it exists in local storage
 def init_session():
-    user_info = ls_get("user_info", key="user_info")
+    user_info = ls_get(key="user_info")
     if user_info:
         st.session_state["user_info"] = user_info
 
