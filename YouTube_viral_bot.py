@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from auth import *
 import pytrends
 from googleapiclient.discovery import build
+from streamlit_js import st_js, st_js_blocking
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from httpx_oauth.clients.google import GoogleOAuth2
