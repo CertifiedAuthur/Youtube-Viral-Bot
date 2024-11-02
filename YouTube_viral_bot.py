@@ -382,13 +382,7 @@ def get_trending_keywords(country):
 
 client_secret_json_path = client_secret_json_path = st.sidebar.file_uploader("Upload your client secret JSON file", type=["json"])
 if client_secret_json_path:
-    temp_dir = tempfile.mkdtemp()
-    temp_file_path = os.path.join(temp_dir, uploaded_file.name)
-    with open(temp_file_path, "wb") as f:
-        f.write(uploaded_file.getvalue())
-    
-    # Use the temporary file path
-    client_secrets_file = temp_file_path
+    client_config = json.loads(client_secret_json_path.read())
 redirect_uri = "https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.app"
 
 # Local Storage Functions
@@ -411,7 +405,7 @@ def auth_flow():
     st.write("Welcome to My App!")
     auth_code = st.experimental_get_query_params().get("code", [None])[0]
     flow_instance = flow.Flow.from_client_secrets_file(
-        client_secret_json_path,
+        client_config,
         scopes=[
             "https://www.googleapis.com/auth/youtube.force-ssl", 
             "https://www.googleapis.com/auth/userinfo.profile", 
