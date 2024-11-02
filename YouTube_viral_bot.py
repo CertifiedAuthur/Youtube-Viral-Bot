@@ -424,7 +424,7 @@ def auth_flow():
         st.write("Please [sign in]({}) to continue.".format(auth_url))
         if st.button("Sign in"):
             st.session_state["code"] = st.experimental_get_query_params().get("code", [None])[0]
-            st.experimental_rerun()
+            st.rerun()
 
 def credentials_to_dict(credentials):
     """Convert credentials to a dictionary for easy access."""
