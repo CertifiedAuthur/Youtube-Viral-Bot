@@ -388,11 +388,13 @@ redirect_uri = "https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.a
 
 # Local Storage Functions
 def ls_get(key):
-    return st_js_blocking(f"return JSON.parse(localStorage.getItem('{key}'));", key=f"ls_get_{key}")
+    unique_key = f"ls_get_{key}_{st.session_state.get('user_info', {}).get('email', 'default')}"  # Include email or a unique identifier
+    return st_js_blocking(f"return JSON.parse(localStorage.getItem('{key}'));", key=unique_key)
 
 def ls_set(key, value, session_key=None):
     json_data = json.dumps(value, ensure_ascii=False)
-    st_js_blocking(f"localStorage.setItem('{key}', JSON.stringify({json_data}));", key=f"ls_set_{key}")
+    unique_key = f"ls_set_{key}_{st.session_state.get('user_info', {}).get('email', 'default')}"
+    st_js_blocking(f"localStorage.setItem('{key}', JSON.stringify({json_data}));", key=unique_key)
 
 # Initialize session with user info if it exists in local storage
 def init_session():
@@ -404,8 +406,7 @@ def init_session():
 # Updated auth_flow to save credentials
 def auth_flow():
     st.write("Welcome to My App!")
-    # Get the query parameters
-    query_params = st.experimental_get_query_params()
+    query_params = st.query_params()
     # Get the authorization code from query parameters
     auth_code = query_params.get("code", [None])[0]
     flow_instance = flow.Flow.from_client_config(
