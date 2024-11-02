@@ -378,98 +378,190 @@ def get_trending_keywords(country):
     df["Search Volume"] = df["Search Volume"].apply(format_number)
     return df
 
-# Load secrets from Streamlit Cloud
-CLIENT_ID = st.secrets["general"]["CLIENT_ID"]
-CLIENT_SECRET = st.secrets["general"]["CLIENT_SECRET"]
-REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
+client_secret_json_path = client_secret_json_path = st.file_uploader("Upload your client secret JSON file", type=["json"]) 
+redirect_uri = https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.app/
 
+# Local Storage Functions
+def ls_get(key, session_key=None):
+    return st_js_blocking(f"return JSON.parse(localStorage.getItem('{key}'));", session_key)
+
+def ls_set(key, value, session_key=None):
+    json_data = json.dumps(value, ensure_ascii=False)
+    st_js_blocking(f"localStorage.setItem('{key}', JSON.stringify({json_data}));", session_key)
+
+# Initialize session with user info if it exists in local storage
+def init_session():
+    user_info = ls_get("user_info")
+    if user_info:
+        st.session_state["user_info"] = user_info
+
+# Authentication flow with Google OAuth
+# Updated auth_flow to save credentials
 def auth_flow():
-    # Define the scopes
-    scopes = [
-        "https://www.googleapis.com/auth/youtube.force-ssl",
-        "https://www.googleapis.com/auth/userinfo.profile",
-        "https://www.googleapis.com/auth/userinfo.email",
-        "https://www.googleapis.com/auth/youtubepartner",
-        "https://www.googleapis.com/auth/youtube",
-        "openid"
-    ]
-    
-    # Set up the OAuth 2.0 flow
-    flow = Flow.from_client_config(
-        {
-            "installed": {
-                "client_id": CLIENT_ID,
-                "client_secret": CLIENT_SECRET,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [REDIRECT_URI],  # Use the variable REDIRECT_URI
-            }
-        },
-        scopes=scopes,
-        redirect_uri=REDIRECT_URI,
+    st.write("Welcome to My App!")
+    auth_code = st.experimental_get_query_params().get("code", [None])[0]
+    flow_instance = flow.Flow.from_client_secrets_file(
+        client_secret_json_path,
+        scopes=[
+            "https://www.googleapis.com/auth/youtube.force-ssl", 
+            "https://www.googleapis.com/auth/userinfo.profile", 
+            "https://www.googleapis.com/auth/userinfo.email", 
+            "https://www.googleapis.com/auth/youtubepartner", 
+            "https://www.googleapis.com/auth/youtube", 
+            "openid"
+        ],
+        redirect_uri=redirect_uri,
     )
 
-    # Check if we have an authorization code
-    if "code" in st.session_state:
-        auth_code = st.session_state["code"]
-        flow.fetch_token(code=auth_code)
-        credentials = flow.credentials
-        st.session_state["credentials"] = credentials_to_dict(credentials)
-        st.session_state["email"] = get_user_email(credentials)  # Store the user email
-        st.experimental_rerun()
+    if auth_code:
+        flow_instance.fetch_token(code=auth_code)
+        credentials = flow_instance.credentials
+        st.session_state["credentials"] = credentials  # Save credentials here
+        st.write("Login Done")
+
+        user_info_service = build("oauth2", "v2", credentials=credentials)
+        user_info = user_info_service.userinfo().get().execute()
+
+        if "email" not in user_info:
+            st.error("Email not found in user info.")
+            return
+
+        st.session_state["google_auth_code"] = auth_code
+        st.session_state["user_info"] = user_info
+        ls_set("user_info", user_info)
     else:
-        # Generate the authorization URL
-        auth_url, _ = flow.authorization_url(prompt='consent')
-        st.write("Please [sign in]({}) to continue.".format(auth_url))
-        if st.button("Sign in"):
-            # Get the authorization code from the query params
-            st.session_state["code"] = st.experimental_get_query_params().get("code", [None])[0]
-            st.rerun()
+        authorization_url, state = flow_instance.authorization_url(
+            access_type="offline",
+            include_granted_scopes="true",
+        )
+        st.write(f"[Sign in with Google]({authorization_url})", unsafe_allow_html=True)
 
-def get_user_email(credentials):
-    """Fetch user's email using the userinfo endpoint."""
-    from google.oauth2 import service_account
-    from googleapiclient.discovery import build
-
-    # Build a service for the userinfo API
-    userinfo_service = build("oauth2", "v2", credentials=credentials)
-    user_info = userinfo_service.userinfo().get().execute()
-    return user_info["email"]
-
-def credentials_to_dict(credentials):
-    """Convert credentials to a dictionary for easy access."""
-    return {
-        "token": credentials.token,
-        "refresh_token": credentials.refresh_token,
-        "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
-        "client_secret": credentials.client_secret,
-        "scopes": credentials.scopes,
-    }
-
+# Main app entry point
 def main():
-    # Initialize session state for credentials
-    if "credentials" not in st.session_state:
-        st.session_state["credentials"] = None
-    if "email" not in st.session_state:
-        st.session_state["email"] = None
-
-    if st.session_state["credentials"]:
-        # User is authenticated, proceed with API calls
-        credentials = google.oauth2.credentials.Credentials(**st.session_state["credentials"])
-        # Create YouTube API client here using `credentials`
-        youtube = build('youtube', 'v3', credentials=credentials)
-
-        # Display user email
-        st.write(f"Logged in as: {st.session_state['email']}")
-        
-        # Now you can call YouTube API methods here
-        # Example: Get channel details (replace with your channel ID)
-        channel_id = "YOUR_CHANNEL_ID"  # Replace with your channel ID
-        analytics_df = get_channel_analytics(channel_id, youtube)
-    else:
-        # Perform authentication
+    init_session()
+    
+    if "user_info" not in st.session_state:
         auth_flow()
+    else:
+        st.write("Welcome back!")
+        st.write(f"User: {st.session_state['user_info']['email']}")
+    
+    if "user_info" in st.session_state:
+        st.write("Main App Content")
+        
+if __name__ == "__main__":
+    main()
+
+st.image("https://raw.githubusercontent.com/CertifiedAuthur/Youtube-Viral-Bot/refs/heads/main/YoutubeViralChatbot.png", width=200)
+st.title("YouTube Viral ChatBot")
+
+# Updated get_service to handle missing credentials
+def get_service():
+    if "credentials" not in st.session_state or st.session_state["credentials"] is None:
+        st.error("Please sign in first.")
+        return None
+    try:
+        service = build("youtube", "v3", credentials=st.session_state["credentials"])
+        return service
+    except Exception as e:
+        st.error(f"Error building YouTube service: {e}")
+        return None
+    
+def execute_api_request(client_library_function, **kwargs):
+    try:
+        response = client_library_function(**kwargs).execute()
+        return response
+    except Exception as e:
+        st.error(f"API request failed: {e}")
+        return None
+
+# # Load secrets from Streamlit Cloud
+# CLIENT_ID = st.secrets["general"]["CLIENT_ID"]
+# CLIENT_SECRET = st.secrets["general"]["CLIENT_SECRET"]
+# REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
+
+# def auth_flow():
+#     # Define the scopes
+#     scopes = [
+#         "https://www.googleapis.com/auth/youtube.force-ssl",
+#         "https://www.googleapis.com/auth/userinfo.profile",
+#         "https://www.googleapis.com/auth/userinfo.email",
+#         "https://www.googleapis.com/auth/youtubepartner",
+#         "https://www.googleapis.com/auth/youtube",
+#         "openid"
+#     ]
+    
+#     # Set up the OAuth 2.0 flow
+#     flow = Flow.from_client_config(
+#         {
+#             "installed": {
+#                 "client_id": CLIENT_ID,
+#                 "client_secret": CLIENT_SECRET,
+#                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+#                 "token_uri": "https://oauth2.googleapis.com/token",
+#                 "redirect_uris": [REDIRECT_URI],  # Use the variable REDIRECT_URI
+#             }
+#         },
+#         scopes=scopes,
+#         redirect_uri=REDIRECT_URI,
+#     )
+
+#     # Check if we have an authorization code
+#     if "code" in st.session_state:
+#         auth_code = st.session_state["code"]
+#         flow.fetch_token(code=auth_code)
+#         credentials = flow.credentials
+#         st.session_state["credentials"] = credentials_to_dict(credentials)
+#         st.session_state["email"] = get_user_email(credentials)  # Store the user email
+#         st.experimental_rerun()
+#     else:
+#         # Generate the authorization URL
+#         auth_url, _ = flow.authorization_url(prompt='consent')
+#         st.write("Please [sign in]({}) to continue.".format(auth_url))
+#         if st.button("Sign in"):
+#             # Get the authorization code from the query params
+#             st.session_state["code"] = st.experimental_get_query_params().get("code", [None])[0]
+#             st.rerun()
+
+# def get_user_email(credentials):
+#     """Fetch user's email using the userinfo endpoint."""
+#     from google.oauth2 import service_account
+#     from googleapiclient.discovery import build
+
+#     # Build a service for the userinfo API
+#     userinfo_service = build("oauth2", "v2", credentials=credentials)
+#     user_info = userinfo_service.userinfo().get().execute()
+#     return user_info["email"]
+
+# def credentials_to_dict(credentials):
+#     """Convert credentials to a dictionary for easy access."""
+#     return {
+#         "token": credentials.token,
+#         "refresh_token": credentials.refresh_token,
+#         "token_uri": credentials.token_uri,
+#         "client_id": credentials.client_id,
+#         "client_secret": credentials.client_secret,
+#         "scopes": credentials.scopes,
+#     }
+
+# def main():
+#     # Initialize session state for credentials
+#     if "credentials" not in st.session_state:
+#         st.session_state["credentials"] = None
+#     if "email" not in st.session_state:
+#         st.session_state["email"] = None
+
+#     if st.session_state["credentials"]:
+#         # User is authenticated, proceed with API calls
+#         credentials = google.oauth2.credentials.Credentials(**st.session_state["credentials"])
+#         # Create YouTube API client here using `credentials`
+#         youtube = build('youtube', 'v3', credentials=credentials)
+
+#         # Display user email
+#         st.write(f"Logged in as: {st.session_state['email']}")
+#     else:
+#         # Perform authentication
+#         auth_flow()
 
 st.image("https://raw.githubusercontent.com/CertifiedAuthur/Youtube-Viral-Bot/refs/heads/main/YoutubeViralChatbot.png", width=200)
 st.title("YouTube Viral ChatBot")
