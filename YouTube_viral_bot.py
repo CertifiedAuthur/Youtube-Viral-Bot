@@ -381,8 +381,8 @@ def get_trending_keywords(country):
     df["Search Volume"] = df["Search Volume"].apply(format_number)
     return df
 
-client_secret_json_path = st.sidebar.file_uploader("Upload your client secret JSON file", type=["json"])
-if client_secret_json_path:
+client_config = st.sidebar.file_uploader("Upload your client secret JSON file", type=["json"])
+if client_config:
     client_config = json.loads(client_secret_json_path.read())
 redirect_uri = "https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.app"
 
