@@ -396,7 +396,7 @@ def ls_set(key, value, session_key=None):
 
 # Initialize session with user info if it exists in local storage
 def init_session():
-    user_info = ls_get(key="user_info")
+    user_info = ls_get("user_info", key="user_info_init_session")
     if user_info:
         st.session_state["user_info"] = user_info
 
@@ -404,7 +404,7 @@ def init_session():
 # Updated auth_flow to save credentials
 def auth_flow():
     st.write("Welcome to My App!")
-    auth_code = st.experimental_get_query_params().get("code", [None])[0]
+    auth_code = st.query_params().get("code", [None])[0]
     flow_instance = flow.Flow.from_client_config(
         client_config,
         scopes=[
