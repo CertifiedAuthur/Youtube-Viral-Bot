@@ -383,7 +383,6 @@ CLIENT_ID = st.secrets["general"]["CLIENT_ID"]
 CLIENT_SECRET = st.secrets["general"]["CLIENT_SECRET"]
 REDIRECT_URI = st.secrets["general"]["REDIRECT_URI"]
 
-
 def auth_flow():
     # Define the scopes
     scopes = [
@@ -403,13 +402,12 @@ def auth_flow():
                 "client_secret": CLIENT_SECRET,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": ["REDIRECT_URI"],
+                "redirect_uris": [REDIRECT_URI],  # Use the variable REDIRECT_URI
             }
         },
         scopes=scopes,
         redirect_uri=REDIRECT_URI,
     )
-
 
     # Check if we have an authorization code
     if "code" in st.session_state:
@@ -417,14 +415,26 @@ def auth_flow():
         flow.fetch_token(code=auth_code)
         credentials = flow.credentials
         st.session_state["credentials"] = credentials_to_dict(credentials)
+        st.session_state["email"] = get_user_email(credentials)  # Store the user email
         st.experimental_rerun()
     else:
         # Generate the authorization URL
         auth_url, _ = flow.authorization_url(prompt='consent')
         st.write("Please [sign in]({}) to continue.".format(auth_url))
         if st.button("Sign in"):
+            # Get the authorization code from the query params
             st.session_state["code"] = st.experimental_get_query_params().get("code", [None])[0]
             st.rerun()
+
+def get_user_email(credentials):
+    """Fetch user's email using the userinfo endpoint."""
+    from google.oauth2 import service_account
+    from googleapiclient.discovery import build
+
+    # Build a service for the userinfo API
+    userinfo_service = build("oauth2", "v2", credentials=credentials)
+    user_info = userinfo_service.userinfo().get().execute()
+    return user_info["email"]
 
 def credentials_to_dict(credentials):
     """Convert credentials to a dictionary for easy access."""
@@ -441,12 +451,22 @@ def main():
     # Initialize session state for credentials
     if "credentials" not in st.session_state:
         st.session_state["credentials"] = None
+    if "email" not in st.session_state:
+        st.session_state["email"] = None
 
     if st.session_state["credentials"]:
         # User is authenticated, proceed with API calls
         credentials = google.oauth2.credentials.Credentials(**st.session_state["credentials"])
         # Create YouTube API client here using `credentials`
         youtube = build('youtube', 'v3', credentials=credentials)
+
+        # Display user email
+        st.write(f"Logged in as: {st.session_state['email']}")
+        
+        # Now you can call YouTube API methods here
+        # Example: Get channel details (replace with your channel ID)
+        channel_id = "YOUR_CHANNEL_ID"  # Replace with your channel ID
+        analytics_df = get_channel_analytics(channel_id, youtube)
     else:
         # Perform authentication
         auth_flow()
@@ -460,7 +480,7 @@ def get_service():
         st.error("Please sign in first.")
         return None
     try:
-        service = build("youtube", "v3", credentials=st.session_state["credentials"])
+        service = build("youtube", "v3", credentials=google.oauth2.credentials.Credentials(**st.session_state["credentials"]))
         return service
     except Exception as e:
         st.error(f"Error building YouTube service: {e}")
