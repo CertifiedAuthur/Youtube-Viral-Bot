@@ -9,6 +9,7 @@ from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from httpx_oauth.clients.google import GoogleOAuth2
 import matplotlib.pyplot as plt
+from google_auth_oauthlib import flow
 from pytrends.request import TrendReq
 import datetime
 import pandas as pd
@@ -379,7 +380,7 @@ def get_trending_keywords(country):
     df["Search Volume"] = df["Search Volume"].apply(format_number)
     return df
 
-client_secret_json_path = client_secret_json_path = st.file_uploader("Upload your client secret JSON file", type=["json"]) 
+client_secret_json_path = client_secret_json_path = st.sidebar.file_uploader("Upload your client secret JSON file", type=["json"]) 
 redirect_uri = "https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.app"
 
 # Local Storage Functions
