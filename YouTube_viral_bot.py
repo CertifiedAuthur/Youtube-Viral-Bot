@@ -379,7 +379,7 @@ def get_trending_keywords(country):
     return df
 
 client_secret_json_path = client_secret_json_path = st.file_uploader("Upload your client secret JSON file", type=["json"]) 
-redirect_uri = https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.app/
+redirect_uri = "https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.app"
 
 # Local Storage Functions
 def ls_get(key, session_key=None):
