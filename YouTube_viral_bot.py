@@ -383,7 +383,7 @@ def get_trending_keywords(country):
 
 client_config = st.sidebar.file_uploader("Upload your client secret JSON file", type=["json"])
 if client_config:
-    client_config = json.loads(client_secret_json_path.read())
+    client_config = json.loads(client_config.read())
 redirect_uri = "https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.app"
 
 # Local Storage Functions
