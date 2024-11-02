@@ -388,15 +388,15 @@ redirect_uri = "https://youtube-viral-chatbot-7szrdtxws3dzuyxgaqwoka.streamlit.a
 
 # Local Storage Functions
 def ls_get(key, session_key=None):
-    return st_js_blocking(f"return JSON.parse(localStorage.getItem('{key}'));", session_key)
+    return st_js_blocking(f"return JSON.parse(localStorage.getItem('{key}'));", key="ls_get_{key}")
 
 def ls_set(key, value, session_key=None):
     json_data = json.dumps(value, ensure_ascii=False)
-    st_js_blocking(f"localStorage.setItem('{key}', JSON.stringify({json_data}));", session_key)
+    st_js_blocking(f"localStorage.setItem('{key}', JSON.stringify({json_data}));", key=f"ls_set_{key}")
 
 # Initialize session with user info if it exists in local storage
 def init_session():
-    user_info = ls_get("user_info")
+    user_info = ls_get("user_info", key="user_info")
     if user_info:
         st.session_state["user_info"] = user_info
 
