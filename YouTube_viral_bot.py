@@ -396,7 +396,7 @@ def ls_set(key, value, session_key=None):
 
 # Initialize session with user info if it exists in local storage
 def init_session():
-    user_info = ls_get("user_info", key="user_info_init_session")
+    user_info = ls_get("user_info")  # Adjusted to call ls_get with a single argument
     if user_info:
         st.session_state["user_info"] = user_info
 
