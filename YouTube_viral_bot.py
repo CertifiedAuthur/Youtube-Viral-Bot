@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import asyncio
+import json
 
 # Helper function to convert large numbers to thousands, millions, etc.
 def format_number(number):
